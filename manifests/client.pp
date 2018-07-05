@@ -194,6 +194,7 @@
 # limitations under the License.
 #
 define openvpn::client (
+  String $bucket                              = undef,
   String $server,
   String $compression                         = 'comp-lzo',
   String $dev                                 = 'tun',
@@ -332,6 +333,18 @@ define openvpn::client (
       ],
   }
 
+  exec { "upload ${name} to s3 ${bukcet}":
+      cwd         => "${etc_directory}/openvpn/${server}/download-configs/",
+      command => "s3cmd put ${name}.ovpn s3://${bucket}/${server}/",
+      path    => [ '/bin', '/usr/bin' ],
+      refreshonly => true,
+      require     => [
+        Concat["${etc_directory}/openvpn/${server}/download-configs/${name}.ovpn"],
+        File["${etc_directory}/openvpn/${server}/download-configs/${name}/keys/${name}/ca.crt"],
+        File["${etc_directory}/openvpn/${server}/download-configs/${name}.tblk/${name}.ovpn"],
+      ],
+  }
+
   file {
     "${etc_directory}/openvpn/${server}/download-configs/${name}.tblk":
       ensure => directory;
@@ -366,7 +379,10 @@ define openvpn::client (
       File["${etc_directory}/openvpn/${server}/download-configs/${name}.tblk"],
       File["${etc_directory}/openvpn/${server}/download-configs/${name}.tblk/${name}.ovpn"],
     ],
-    notify  => Exec["mail ${name} to ${_recipient_address}"];
+    notify  => [
+		Exec["mail ${name} to ${_recipient_address}"],
+		Exec["upload ${name} to s3 ${bukcet}"],
+    ]
   }
 
   concat { "${etc_directory}/openvpn/${server}/download-configs/${name}.ovpn":

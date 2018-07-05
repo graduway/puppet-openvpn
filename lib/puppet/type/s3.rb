@@ -29,6 +29,12 @@ Puppet::Type.newtype(:s3) do
       desc "The aws s3 bucket path"
   end
 
+  newparam(:extract) do
+      desc 'whether file should be uploaded or downloaded from s3 (get|true).'
+      newvalues(:get, :put)
+      defaultto(:get)
+  end
+
   newparam(:access_key_id) do
       desc "AWS secret access key id"
   end
