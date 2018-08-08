@@ -13,7 +13,9 @@ def send_mail (
 	file_name,
 	receiver,
 	sender,
+        envirnmnt,
 ):
+        environment = envirnmnt.replace('.','_')
 	SMTPSERVER = "localhost"
 
 	# instance of MIMEMultipart
@@ -26,7 +28,7 @@ def send_mail (
 	msg['To'] = receiver
  
 	# storing the subject 
-	msg['Subject'] = "OpenVPN Configuration"
+	msg['Subject'] = "OpenVPN Configuration for " + environment + " environment"
  
 	# string to store the body of the mail
 	body = "Please find your OpenVPN configuration attached"
@@ -36,6 +38,7 @@ def send_mail (
  
 	# open the file to be sent 
 	filename = os.path.basename(file_name)
+        attachment_name = environment + "-" + filename
 	attachment = open(file_name, "rb")
  
 	# instance of MIMEBase and named as p
@@ -47,7 +50,7 @@ def send_mail (
 	# encode into base64
 	encoders.encode_base64(p)
   
-	p.add_header('Content-Disposition', "attachment; filename= %s" % filename)
+	p.add_header('Content-Disposition', "attachment; filename= %s" % attachment_name)
  
 	# attach the instance 'p' to instance 'msg'
 	msg.attach(p)
@@ -68,9 +71,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Sends an email to the specified receivers using the Sykehuspartner Exchange server.")
     parser.add_argument("--sender","-s", type=str, help="Sender's email address.")
     parser.add_argument("--receiver","-r", type=str, help="Receiver's email addresses.")
+    parser.add_argument("--environment","-e", type=str, help="Environment variable")
     parser.add_argument("-f", "--attach",metavar='FILENAME', help="Specifies that the body argument contains a file path instead of plain text")
     args = parser.parse_args()
 
     path = os.path.abspath(args.attach)
 
-    send_mail(args.attach, args.receiver, args.sender)
+    send_mail(args.attach, args.receiver, args.sender, args.environment)

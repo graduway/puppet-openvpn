@@ -216,6 +216,7 @@ define openvpn::client (
   Hash $setenv_safe                           = {},
   String $up                                  = '',
   String $down                                = '',
+  String $environment                         = 'prod',
   Boolean $tls_auth                           = false,
   Optional[String] $x509_name                 = undef,
   Optional[Integer] $sndbuf                   = undef,
@@ -321,7 +322,7 @@ define openvpn::client (
   
   exec { "mail ${name} to ${_recipient_address}":
       cwd         => "${etc_directory}/openvpn/${server}/download-configs/",
-      command     => "/opt/scripts/send_mail.py -s ${mail_from} -r  ${_recipient_address} -f ${name}.ovpn",
+      command     => "/opt/scripts/send_mail.py -s ${mail_from} -r  ${_recipient_address} -e ${environment} -f ${name}.ovpn",
       refreshonly => true,
       require     => [
         File["${etc_directory}/openvpn/${server}/download-configs/${name}/${name}.conf"],
